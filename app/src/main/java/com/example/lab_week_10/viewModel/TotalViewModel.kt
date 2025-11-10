@@ -3,8 +3,10 @@ package com.example.lab_week_10.viewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
+import com.example.lab_week_10.database.Total
+import com.example.lab_week_10.database.TotalDao
 
-class TotalViewModel: ViewModel() {
+class TotalViewModel(private val totalDao: TotalDao): ViewModel() {
     //Declare the LiveData object
     private val _total = MutableLiveData<Int>()
     val total: LiveData<Int> = _total
@@ -18,7 +20,13 @@ class TotalViewModel: ViewModel() {
     }
     //Increment the total value
     fun incrementTotal() {
-        _total.postValue(_total.value?.plus(1))
+        val newTotal = (_total.value ?: 0) + 1
+        _total.postValue(newTotal)
+        totalDao.update(Total(id = 1, total = newTotal))
     }
 
+    //Set new total value
+    fun setTotal(newTotal: Int) {
+        _total.postValue(newTotal)
+    }
 }
