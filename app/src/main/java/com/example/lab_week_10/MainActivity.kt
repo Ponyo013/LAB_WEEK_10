@@ -3,6 +3,7 @@ package com.example.lab_week_10
 import android.os.Bundle
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
@@ -11,8 +12,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.room.Room
 import com.example.lab_week_10.database.Total
 import com.example.lab_week_10.database.TotalDatabase
+import com.example.lab_week_10.database.TotalObject
 import com.example.lab_week_10.viewModel.TotalViewModel
 import com.example.lab_week_10.viewModel.TotalViewModelFactory
+import com.jakewharton.threetenabp.AndroidThreeTen
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.format.DateTimeFormatter
 
 class   MainActivity : AppCompatActivity() {
     // Create an instance of the TotalDatabase
@@ -28,6 +33,7 @@ class   MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
+        AndroidThreeTen.init(this)
 
         // Initialize the value of the total from the database
         initializeValueFromDatabase()
@@ -56,11 +62,22 @@ class   MainActivity : AppCompatActivity() {
     // If the database is empty, insert a new Total object with the value of 0
     // If the database is not empty, get the value of the total from the database
     private fun initializeValueFromDatabase() {
-        val total = db.totalDao().getTotal(ID)
-        if (total.isEmpty()) {
-            db.totalDao().insert(Total(id = 1, total = 0))
+        val totalList = db.totalDao().getTotal(ID)
+        if (totalList.isEmpty()) {
+            // buat tanggal sekarang
+            val now = LocalDateTime.now()
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+            val formattedDate = now.format(formatter)
+
+            db.totalDao().insert(
+                Total(
+                    id = 1,
+                    total = TotalObject(value = 0, date = formattedDate)
+                )
+            )
+            viewModel.setTotal(0)
         } else {
-            viewModel.setTotal(total.first().total)
+            viewModel.setTotal(totalList.first().total.value)
         }
     }
 
@@ -77,7 +94,11 @@ class   MainActivity : AppCompatActivity() {
             updateText(it)
         })
         findViewById<Button>(R.id.button_increment).setOnClickListener {
-            viewModel.incrementTotal()
+            // Ambil timestamp saat increment
+            val timestamp = viewModel.incrementTotal()
+
+            // Tampilkan Toast
+            Toast.makeText(this, "Last updated: $timestamp", Toast.LENGTH_SHORT).show()
         }
     }
 

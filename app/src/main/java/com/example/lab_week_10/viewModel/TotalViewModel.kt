@@ -5,27 +5,40 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.lab_week_10.database.Total
 import com.example.lab_week_10.database.TotalDao
+import com.example.lab_week_10.database.TotalObject
+import org.threeten.bp.LocalDateTime
+import org.threeten.bp.format.DateTimeFormatter
 
-class TotalViewModel(private val totalDao: TotalDao): ViewModel() {
-    //Declare the LiveData object
+class TotalViewModel(private val totalDao: TotalDao) : ViewModel() {
     private val _total = MutableLiveData<Int>()
     val total: LiveData<Int> = _total
-    //Initialize the LiveData object
+
+    var lastUpdatedTimestamp: String? = null  // tambahkan ini
+
     init {
-        //postValue is used to set the value of the LiveData object
-        //from a background thread or the main thread
-        //While on the other hand setValue() is used
-        //only if you're on the main thread
         _total.postValue(0)
     }
-    //Increment the total value
-    fun incrementTotal() {
-        val newTotal = (_total.value ?: 0) + 1
-        _total.postValue(newTotal)
-        totalDao.update(Total(id = 1, total = newTotal))
+
+    fun incrementTotal(): String {
+        val newValue = (_total.value ?: 0) + 1
+        _total.postValue(newValue)
+
+        val currentDateTime = LocalDateTime.now()
+        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
+        val formattedDate = currentDateTime.format(formatter)
+
+        // update database
+        totalDao.update(
+            Total(
+                id = 1,
+                total = TotalObject(value = newValue, date = formattedDate)
+            )
+        )
+
+        lastUpdatedTimestamp = formattedDate  // simpan timestamp terakhir
+        return formattedDate
     }
 
-    //Set new total value
     fun setTotal(newTotal: Int) {
         _total.postValue(newTotal)
     }

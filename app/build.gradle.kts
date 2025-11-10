@@ -41,7 +41,7 @@ dependencies {
     implementation ("androidx.room:room-runtime:$roomVersion")
     annotationProcessor("androidx.room:room-compiler:$roomVersion")
     kapt("androidx.room:room-compiler:$roomVersion")
-
+    implementation("com.jakewharton.threetenabp:threetenabp:1.4.6")
     implementation ("androidx.lifecycle:lifecycle-viewmodel-ktx:2.6.2")
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.2")
     implementation(libs.androidx.core.ktx)
